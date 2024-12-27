@@ -4,4 +4,4 @@ spring:
 
 backup:
   folder:
-    path: /backup
+    path: ./backup
