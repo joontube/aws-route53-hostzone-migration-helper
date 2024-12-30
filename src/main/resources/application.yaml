@@ -1,7 +1,3 @@
 spring:
   application:
     name: hostzone-migration-helper
-
-backup:
-  folder:
-    path: ./backup
