@@ -52,7 +52,7 @@ public class RecordController {
                 }
 
                 // Validate if the file has a .json extension
-                if (!file.getOriginalFilename().endsWith(".json")) {
+                if (!Objects.requireNonNull(file.getOriginalFilename()).endsWith(".json")) {
                     return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Invalid file format. All files must have a .json extension.");
                 }
 
