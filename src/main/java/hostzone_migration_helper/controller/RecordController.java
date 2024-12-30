@@ -26,38 +26,51 @@ public class RecordController {
     }
 
     /**
-     * Endpoint to filter DNS records from an uploaded file.
-     * This endpoint accepts a file, processes the DNS records, and returns the path of the filtered result.
+     * Endpoint to filter DNS records from uploaded files.
+     * This endpoint accepts multiple JSON files, processes the DNS records in each file,
+     * and returns the paths of the filtered results.
      *
-     * @param file The file containing the DNS records to be processed
-     * @return A response indicating the result of the filtering process
+     * @param files An array of files containing the DNS records to be processed
+     * @return A response indicating the result of the filtering process, including the paths of filtered files
      */
     @PostMapping("/filter")
-    public ResponseEntity<String> filterDNSRecords(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> filterDNSRecords(@RequestParam("files") MultipartFile[] files) {
         try {
-            // Check if the file is empty
-            if (file.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The uploaded file is empty. Please provide a valid JSON file.");
+            // Check if no files were uploaded
+            if (files == null || files.length == 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No files were uploaded. Please upload valid JSON files.");
             }
 
-            // Check if the file has a valid JSON extension
-            if (!Objects.requireNonNull(file.getOriginalFilename()).endsWith(".json")) {
-                return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Invalid file format. Please upload a file with a .json extension.");
+            // StringBuilder to accumulate paths of processed files
+            StringBuilder resultPaths = new StringBuilder();
+
+            // Process each file independently
+            for (MultipartFile file : files) {
+                // Validate if the file is empty
+                if (file.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("One of the uploaded files is empty. Please provide valid JSON files.");
+                }
+
+                // Validate if the file has a .json extension
+                if (!file.getOriginalFilename().endsWith(".json")) {
+                    return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Invalid file format. All files must have a .json extension.");
+                }
+
+                // Process the valid file and filter its contents
+                Path resultFilePath = dnsRecordService.processFilteredRecords(file);
+
+                // Append the path of the processed file to the response message
+                resultPaths.append("Filtered JSON saved at: ").append(resultFilePath).append("\n");
             }
 
-            // Process the uploaded file and filter the DNS records
-            Path resultFilePath = dnsRecordService.processFilteredRecords(file);
+            // Return the paths of all processed files
+            return ResponseEntity.ok(resultPaths.toString());
 
-            // Return a success message with the path to the filtered file
-            return ResponseEntity.ok("Filtered JSON saved at: " + resultFilePath);
         } catch (IOException e) {
-            // Handle IO exceptions during file processing
+            // Handle errors related to file I/O
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File processing failed due to an I/O error: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            // Handle cases where the JSON structure does not match the expected DTO
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The uploaded JSON file does not match the expected format: " + e.getMessage());
         } catch (Exception e) {
-            // Handle any other unexpected exceptions
+            // Handle any unexpected errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
