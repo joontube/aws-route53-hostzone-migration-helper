@@ -53,5 +53,13 @@ public class ResourceRecordSet {
     public void setResourceRecords(List<ResourceRecord> resourceRecords) {
         this.resourceRecords = resourceRecords;
     }
+
+    public AliasTarget getAliasTarget() {
+        return aliasTarget;
+    }
+
+    public void setAliasTarget(AliasTarget aliasTarget) {
+        this.aliasTarget = aliasTarget;
+    }
 }
 

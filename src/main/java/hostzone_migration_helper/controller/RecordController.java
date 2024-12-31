@@ -57,7 +57,7 @@ public class RecordController {
                 }
 
                 // Process the valid file and filter its contents
-                Path resultFilePath = dnsRecordService.processFilteredRecords(file);
+                Path resultFilePath = dnsRecordService.processFile(file);
 
                 // Append the path of the processed file to the response message
                 resultPaths.append("Filtered JSON saved at: ").append(resultFilePath).append("\n");
